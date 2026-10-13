@@ -105,3 +105,30 @@ function parseAIResponse(rawJson: string, original: CrawledArticle): ProcessedAr
     };
   }
 }
+
+export async function chatWithAI(userMessage: string): Promise<string> {
+  const prompt = `Bạn là trợ lý AI thông minh hỗ trợ quản trị viên website ${config.wordpress.url || ''}.
+Hãy trả lời ngắn gọn, thân thiện, hữu ích và tự nhiên bằng tiếng Việt:
+Người dùng nhắn: "${userMessage}"`;
+
+  try {
+    if (config.ai.provider === 'openai') {
+      const openai = new OpenAI({ apiKey: config.ai.openaiApiKey });
+      const completion = await openai.chat.completions.create({
+        model: config.ai.openaiModel,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+      });
+      return completion.choices[0]?.message?.content || 'Xin chào! Tôi có thể giúp gì cho bạn?';
+    } else {
+      const genAI = new GoogleGenerativeAI(config.ai.geminiApiKey);
+      const model = genAI.getGenerativeModel({ model: config.ai.geminiModel });
+      const result = await model.generateContent(prompt);
+      return result.response.text();
+    }
+  } catch (error: any) {
+    console.error('[AI Chat] Error:', error);
+    return 'Xin chào! Tôi là AI Bot hỗ trợ website. Bạn có thể gửi cho tôi một link bài viết để tôi tự động cào và đăng lên WordPress, hoặc hỏi tôi bất cứ điều gì!';
+  }
+}
+

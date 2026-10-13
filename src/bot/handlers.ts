@@ -1,7 +1,7 @@
 import { Context } from 'grammy';
 import { config } from '../config.js';
 import { crawlArticle } from '../services/crawler.js';
-import { processArticleWithAI } from '../services/ai.js';
+import { processArticleWithAI, chatWithAI } from '../services/ai.js';
 import { wpService } from '../services/wordpress.js';
 import { createPostActionsKeyboard, createPublishedKeyboard } from './keyboards.js';
 
@@ -86,7 +86,26 @@ export async function handleUrlMessage(ctx: Context) {
 
   const text = ctx.message?.text || '';
   const urlMatch = text.match(/https?:\/\/[^\s]+/);
-  if (!urlMatch) return;
+
+  if (!urlMatch) {
+    const lower = text.trim().toLowerCase();
+    if (['hello', 'hi', 'alo', 'chào', 'xin chào', 'hey'].includes(lower)) {
+      await ctx.reply(
+        `👋 Chào bạn! Tôi là AI Bot hỗ trợ website **${config.wordpress.url || 'WordPress'}**.\n\n` +
+          `📌 **Bạn có thể:**\n` +
+          `• 🔗 **Dán link bài viết bất kỳ** để tôi cào nội dung, viết lại chuẩn SEO và tạo bài nháp trên web.\n` +
+          `• 💬 **Trò chuyện / Hỏi đáp:** Hỏi tôi bất kỳ ý tưởng viết bài, SEO, nội dung website.\n` +
+          `• 🛠 Gõ /status để kiểm tra kết nối, hoặc /help để xem hướng dẫn.`
+      );
+      return;
+    }
+
+    // Chat with AI
+    await ctx.replyWithChatAction('typing');
+    const reply = await chatWithAI(text);
+    await ctx.reply(reply);
+    return;
+  }
 
   const url = urlMatch[0];
   const progressMsg = await ctx.reply(`🔍 **Bước 1/4:** Đang cào dữ liệu từ đường dẫn:\n_${url}_`, {
