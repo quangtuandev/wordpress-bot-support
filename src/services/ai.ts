@@ -132,3 +132,83 @@ Người dùng nhắn: "${userMessage}"`;
   }
 }
 
+export async function generateEmbedding(text: string): Promise<number[]> {
+  try {
+    if (config.ai.provider === 'openai') {
+      if (!config.ai.openaiApiKey) return [];
+      const openai = new OpenAI({ apiKey: config.ai.openaiApiKey });
+      const res = await openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: text,
+        dimensions: 768,
+      });
+      return res.data[0].embedding;
+    } else {
+      if (!config.ai.geminiApiKey) return [];
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=${config.ai.geminiApiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'models/gemini-embedding-001',
+            content: { parts: [{ text }] },
+            outputDimensionality: 768,
+          }),
+        }
+      );
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`[${res.status}] ${errBody}`);
+      }
+      const data: any = await res.json();
+      return data.embedding?.values || [];
+    }
+  } catch (err: any) {
+    console.error('[AI Embedding Error]:', err.message);
+    return [];
+  }
+}
+
+export async function generateEmbeddingsBatch(texts: string[]): Promise<number[][]> {
+  if (texts.length === 0) return [];
+  try {
+    if (config.ai.provider === 'openai') {
+      if (!config.ai.openaiApiKey) return [];
+      const openai = new OpenAI({ apiKey: config.ai.openaiApiKey });
+      const res = await openai.embeddings.create({
+        model: 'text-embedding-3-small',
+        input: texts,
+        dimensions: 768,
+      });
+      return res.data.map((d) => d.embedding);
+    } else {
+      if (!config.ai.geminiApiKey) return [];
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:batchEmbedContents?key=${config.ai.geminiApiKey}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            requests: texts.map((t) => ({
+              model: 'models/gemini-embedding-001',
+              content: { parts: [{ text: t }] },
+              outputDimensionality: 768,
+            })),
+          }),
+        }
+      );
+      if (!res.ok) {
+        const errBody = await res.text();
+        throw new Error(`[${res.status}] ${errBody}`);
+      }
+      const data: any = await res.json();
+      return (data.embeddings || []).map((e: any) => e.values || []);
+    }
+  } catch (err: any) {
+    console.error('[AI Batch Embedding Error]:', err.message);
+    return [];
+  }
+}
+
+

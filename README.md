@@ -95,9 +95,37 @@ docker compose logs -f
 ## 📋 Lệnh điều khiển Bot trên Telegram
 
 - `/start` - Khởi động và kiểm tra quyền sử dụng.
-- `/status` - Kiểm tra tình trạng kết nối tới WordPress và AI.
-- `/help` - Xem hướng dẫn chi tiết cách thức cào và duyệt bài.
+- `/status` - Kiểm tra tình trạng kết nối tới WordPress, AI và PostgreSQL (pgvector).
+- `/help` - Xem hướng dẫn chi tiết cách thức cào bài và tra cứu mã HS.
+- `/hs <từ khóa>` - Tra cứu mã HS & biểu thuế (MFN, Form E, ATIGA, EVFTA, VAT) bằng ngôn ngữ tự nhiên.
+- `/hs_stats` - Xem thống kê số lượng mã HS và vector AI đã index.
 - `[Gửi link URL]` - Bắt đầu tự động cào bài, viết lại và đăng lên WordPress.
+- `[Gửi file .xlsx/.csv]` - Tự động nạp biểu thuế hải quan vào pgvector và cập nhật cơ sở dữ liệu.
+
+---
+
+## 🌐 REST API Tra cứu Mã HS (Dành cho Website / Theme WordPress)
+
+Bot tích hợp sẵn Fastify REST API Server chạy tại port `3001`:
+
+- **Tìm kiếm Hybrid (Mã số / Ngữ nghĩa AI):**
+  `GET http://localhost:3001/api/hs/search?q=tai+nghe+bluetooth&limit=10`
+- **Chi tiết Mã HS & Mã liên quan (phục vụ SEO):**
+  `GET http://localhost:3001/api/hs/detail/85183010`
+- **Thống kê Database:**
+  `GET http://localhost:3001/api/hs/stats`
+
+---
+
+## 📦 Đồng bộ Biểu thuế bằng lệnh CLI
+
+```bash
+# Nạp nhanh toàn bộ biểu thuế vào Database (15.000 mã trong ~12s):
+npm run sync-hs -- --no-embeddings
+
+# Nạp biểu thuế kèm tạo Vector AI (cần GEMINI_API_KEY hoặc OPENAI_API_KEY trong .env):
+npm run sync-hs
+```
 
 ---
 

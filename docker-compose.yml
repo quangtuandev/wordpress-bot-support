@@ -1,14 +1,42 @@
 version: '3.8'
 
 services:
+  postgres-vector:
+    image: pgvector/pgvector:pg16
+    container_name: hs-pgvector
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: hs_database
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgvector_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hs_database"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   wordpress-bot:
     build: .
     container_name: wp-support-bot
     restart: unless-stopped
+    depends_on:
+      postgres-vector:
+        condition: service_healthy
     env_file:
       - .env
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgrespassword@postgres-vector:5432/hs_database
+    ports:
+      - "3001:3001"
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "3"
+
+volumes:
+  pgvector_data:

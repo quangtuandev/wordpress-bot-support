@@ -8,7 +8,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "tsx src/index.ts",
-    "prod": "node dist/index.js"
+    "prod": "node dist/index.js",
+    "sync-hs": "tsx src/scripts/sync-excel.ts"
   },
   "keywords": [
     "telegram-bot",
@@ -23,16 +24,21 @@
   "license": "MIT",
   "dependencies": {
     "@extractus/article-extractor": "^8.0.10",
+    "@fastify/cors": "^11.3.1",
     "@google/generative-ai": "^0.24.0",
     "axios": "^1.7.9",
     "cheerio": "^1.0.0",
     "dotenv": "^16.4.7",
+    "fastify": "^5.12.7",
     "grammy": "^1.35.0",
     "openai": "^4.86.1",
-    "slugify": "^1.6.6"
+    "pg": "^8.23.1",
+    "slugify": "^1.6.6",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/node": "^22.13.9",
+    "@types/pg": "^8.23.1",
     "tsx": "^4.19.3",
     "typescript": "^5.8.2"
   }

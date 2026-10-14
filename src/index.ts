@@ -6,11 +6,15 @@ import {
   handleStatus,
   handleUrlMessage,
   handleCallbackQuery,
+  handleHsCommand,
+  handleHsStatsCommand,
+  handleDocumentMessage,
 } from './bot/handlers.js';
+import { startApiServer } from './api/server.js';
 
 async function bootstrap() {
   console.log('----------------------------------------------------');
-  console.log('🤖 WordPress AI Support Bot (Crawling & Publishing)');
+  console.log('🤖 WordPress & HS Code AI Bot (Crawling & pgvector)');
   console.log('----------------------------------------------------');
 
   const { valid, missing } = validateConfig();
@@ -23,14 +27,22 @@ async function bootstrap() {
     process.exit(1);
   }
 
+  // Khởi động HTTP REST API Server cho Website & Tra cứu
+  await startApiServer();
+
   const bot = new Bot(config.telegram.token);
 
   // Register commands
   bot.command('start', handleStart);
   bot.command('help', handleHelp);
   bot.command('status', handleStatus);
+  bot.command('hs', handleHsCommand);
+  bot.command('hs_stats', handleHsStatsCommand);
 
-  // Register text handler (auto detect URLs)
+  // Register document handler (upload Excel/CSV biểu thuế)
+  bot.on('message:document', handleDocumentMessage);
+
+  // Register text handler (auto detect URLs / chat)
   bot.on('message:text', handleUrlMessage);
 
   // Register inline button callbacks

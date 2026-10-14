@@ -21,6 +21,12 @@ export interface AppConfig {
     defaultStatus: 'draft' | 'publish';
     defaultAuthorId?: number;
   };
+  database: {
+    url: string;
+  };
+  api: {
+    port: number;
+  };
 }
 
 function parseAdminIds(raw: string | undefined): number[] {
@@ -50,6 +56,12 @@ export const config: AppConfig = {
     appPassword: process.env.WP_APP_PASSWORD || '',
     defaultStatus: (process.env.WP_DEFAULT_STATUS as 'draft' | 'publish') || 'draft',
     defaultAuthorId: process.env.WP_AUTHOR_ID ? parseInt(process.env.WP_AUTHOR_ID, 10) : undefined,
+  },
+  database: {
+    url: process.env.DATABASE_URL || 'postgresql://postgres:postgrespassword@localhost:5432/hs_database',
+  },
+  api: {
+    port: process.env.API_PORT ? parseInt(process.env.API_PORT, 10) : 3001,
   },
 };
 
